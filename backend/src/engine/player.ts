@@ -31,9 +31,17 @@ export class Player {
   get aside() { return this.zones.aside; }
   get name() { return this.display_name; }
 
-  private shuffleDiscardIntoDeck() {
+  public shuffleDiscardIntoDeck() {
     if (this.zones.discard_pile.length === 0) return;
-    this.zones.deck = [...this.zones.discard_pile].sort(() => Math.random() - 0.5);
+    
+    // Fisher-Yates Shuffle
+    const array = [...this.zones.discard_pile];
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    
+    this.zones.deck = array;
     this.zones.discard_pile = [];
   }
 
@@ -43,8 +51,13 @@ export class Player {
       if (this.zones.deck.length === 0) {
         this.shuffleDiscardIntoDeck();
       }
-      if (this.zones.deck.length > 0) {
-        drawn.push(this.zones.deck.pop()!);
+      
+      const card = this.zones.deck.pop();
+      if (card) {
+        drawn.push(card);
+      } else {
+        // If deck is still empty after shuffle attempt, we can't draw more
+        break;
       }
     }
     this.zones.hand.push(...drawn);

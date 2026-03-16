@@ -3,24 +3,72 @@ import { CardType } from "./card.js";
 
 export abstract class Bot {
   public abstract takeTurn(game: GameState): Promise<void>;
+
+  protected async handleInteractions(game: GameState): Promise<void> {
+    while (game.phase === GamePhase.WaitingForInput && game.interactingPlayerIndex !== null) {
+      const player = game.players[game.interactingPlayerIndex];
+      if (!player.display_name.includes("Bot")) break;
+
+      const interaction = game.currentInteraction;
+      if (!interaction) break;
+
+      let result: any = null;
+
+      switch (interaction.type) {
+        case "choice":
+          if (interaction.options && interaction.options.length > 0) {
+            // Default to first option
+            result = interaction.options[0].value;
+          }
+          break;
+        case "discard":
+        case "trash":
+          const count = interaction.minCards || 0;
+          if (interaction.source === "hand") {
+            // Just pick the first 'count' cards
+            result = Array.from({ length: Math.min(count, player.hand.length) }, (_, i) => i);
+          }
+          break;
+        case "gain":
+          // Interaction message usually contains cost info, but for bots we'll just pick something affordable
+          const options = Array.from(game.supply.entries())
+            .filter(([_, qty]) => qty > 0)
+            .map(([name]) => name);
+          result = options.length > 0 ? options[0] : null;
+          break;
+        case "reaction":
+          result = null; // Decline reactions by default
+          break;
+      }
+
+      game.submitInteraction(result);
+    }
+  }
 }
 
 export class EasyBot extends Bot {
   public async takeTurn(game: GameState): Promise<void> {
+    await this.handleInteractions(game);
     const player = game.getCurrentPlayer();
 
     // Action Phase
     if (game.phase === GamePhase.Action) {
       while (game.actions > 0) {
+        await this.handleInteractions(game);
+        if (game.phase !== GamePhase.Action) break;
+
         const actionCards = player.hand
           .map((card, index) => ({ card, index }))
           .filter((item) => item.card.types.includes(CardType.Action));
         if (actionCards.length === 0) break;
         const randomAction = actionCards[Math.floor(Math.random() * actionCards.length)]!;
         game.playCard(randomAction.index);
+        await this.handleInteractions(game);
       }
-      game.nextPhase();
+      if (game.phase === GamePhase.Action) game.nextPhase();
     }
+
+    await this.handleInteractions(game);
 
     // Buy Phase
     if (game.phase === GamePhase.Buy) {
@@ -31,7 +79,6 @@ export class EasyBot extends Bot {
       }
 
       // Buy random affordable card
-      const { CardFactory } = await import("./cards.js");
       const affordableCards = Array.from(game.supply.entries())
         .filter(([name, count]) => {
           if (count <= 0) return false;
@@ -55,11 +102,14 @@ export class EasyBot extends Bot {
 export class MediumBot extends Bot {
   // "Big Money" Strategy
   public async takeTurn(game: GameState): Promise<void> {
+    await this.handleInteractions(game);
     const player = game.getCurrentPlayer();
 
     if (game.phase === GamePhase.Action) {
       game.nextPhase(); // Skip actions usually
     }
+
+    await this.handleInteractions(game);
 
     if (game.phase === GamePhase.Buy) {
       // Play all treasures
@@ -81,11 +131,15 @@ export class MediumBot extends Bot {
 export class HardBot extends Bot {
   // "Engine Builder" Strategy
   public async takeTurn(game: GameState): Promise<void> {
+    await this.handleInteractions(game);
     const player = game.getCurrentPlayer();
 
     if (game.phase === GamePhase.Action) {
       // Play Actions in priority: +Actions first, then +Cards
       while (game.actions > 0) {
+        await this.handleInteractions(game);
+        if (game.phase !== GamePhase.Action) break;
+
         const hand = player.hand;
         let bestActionIndex = hand.findIndex(c => c.name === "Village" || c.name === "Market");
         if (bestActionIndex === -1) {
@@ -94,12 +148,15 @@ export class HardBot extends Bot {
         
         if (bestActionIndex !== -1) {
             game.playCard(bestActionIndex);
+            await this.handleInteractions(game);
         } else {
             break;
         }
       }
-      game.nextPhase();
+      if (game.phase === GamePhase.Action) game.nextPhase();
     }
+
+    await this.handleInteractions(game);
 
     if (game.phase === GamePhase.Buy) {
       let treasureIndex;
