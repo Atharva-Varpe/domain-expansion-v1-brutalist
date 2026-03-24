@@ -360,10 +360,13 @@ export class GameState {
   public isGameOver(): boolean {
     if (this.supply.get("Province") === 0) return true;
     let emptyPiles = 0;
-    this.supply.forEach((count) => {
-      if (count === 0) emptyPiles++;
-    });
-    return emptyPiles >= 3;
+    for (const count of this.supply.values()) {
+      if (count === 0) {
+        emptyPiles++;
+        if (emptyPiles >= 3) return true;
+      }
+    }
+    return false;
   }
 
   public getState() {
