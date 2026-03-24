@@ -9,7 +9,29 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow connections with no origin (e.g., mobile apps, curl)
+      if (!origin) return callback(null, true);
+
+      const frontendUrl = process.env.FRONTEND_URL;
+      if (frontendUrl && origin === frontendUrl) {
+        return callback(null, true);
+      }
+
+      const allowedPatterns = [
+        /^http:\/\/localhost(:\d+)?$/,
+        /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+        /^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
+        /^http:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
+        /^http:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+(:\d+)?$/,
+      ];
+
+      if (allowedPatterns.some((pattern) => pattern.test(origin))) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
   },
 });
 
