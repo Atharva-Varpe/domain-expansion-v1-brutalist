@@ -125,8 +125,7 @@ export const GameUI: React.FC = () => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const myPlayer = gameState?.players?.find((p: any) => p.name === name);
+  const myPlayer = gameState?.players?.find((p) => p.name === name);
   const isMyTurn = gameState?.players?.[gameState?.currentPlayerIndex]?.name === name;
 
   return (
@@ -215,8 +214,7 @@ export const GameUI: React.FC = () => {
             <div className="flex-1 flex flex-col h-full gap-6">
               {/* Opponents Area */}
               <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 overflow-x-auto">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {gameState?.players?.map((p: any, i: number) => {
+                {gameState?.players?.map((p, i: number) => {
                   if (p.name === name) return null;
                   const isActive = i === gameState.currentPlayerIndex;
                   return (
@@ -247,8 +245,7 @@ export const GameUI: React.FC = () => {
                     <ShoppingCart size={16} /> Supply
                   </h3>
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {gameState?.supply?.map((s: any, i: number) => (
+                    {gameState?.supply?.map((s, i: number) => (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -311,8 +308,7 @@ export const GameUI: React.FC = () => {
                       <Play size={16} /> Play Area
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {gameState?.players?.[gameState?.currentPlayerIndex]?.playArea?.map((c: any, i: number) => (
+                      {gameState?.players?.[gameState?.currentPlayerIndex]?.playArea?.map((c, i: number) => (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
@@ -340,8 +336,7 @@ export const GameUI: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {myPlayer?.hand?.map((c: any, i: number) => (
+                  {myPlayer?.hand?.map((c, i: number) => (
                     <motion.div
                       layoutId={`card-${i}`}
                       initial={{ y: 20, opacity: 0 }}
