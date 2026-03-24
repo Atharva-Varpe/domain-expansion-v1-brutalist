@@ -75,8 +75,19 @@ export class GameState {
     });
   }
 
+  private _cardCache = new Map<string, Card>();
+
+  private getCachedCard(name: string): Card {
+    let card = this._cardCache.get(name);
+    if (!card) {
+      card = CardFactory.createCard(name);
+      this._cardCache.set(name, card);
+    }
+    return card;
+  }
+
   public getCardCost(name: string): number {
-    const baseCard = CardFactory.createCard(name);
+    const baseCard = this.getCachedCard(name);
     return Math.max(0, baseCard.cost - this.costReduction);
   }
 
@@ -372,7 +383,7 @@ export class GameState {
         name,
         count,
         cost: this.getCardCost(name),
-        card: CardFactory.createCard(name)
+        card: this.getCachedCard(name)
       })),
       trash: this.trash,
       currentPlayerIndex: this.currentPlayerIndex,
