@@ -1,0 +1,3 @@
+## 2024-05-18 - [Add Semantic Label to Name Input]
+**Learning:** For inputs visually paired with headings instead of explicit labels, screen readers may lack context. This frequently occurs in "Enter your name" style initial screens where designers rely on `<h2>` and `placeholder` for visual context. Relying on an `<h2>` and placeholder text for accessibility violates strict UX guidelines.
+**Action:** Always wrap the descriptive text in a semantic `<label htmlFor="inputId">` element, or apply `aria-label` / `aria-labelledby`, ensuring the input has an `id` matching the `htmlFor` of the label to bind them programmatically. This was fixed in the GameUI login screen by replacing the `<h2>` with a styled `<label>`.
