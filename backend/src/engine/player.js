@@ -39,15 +39,26 @@ export class Player {
         this.discard.push(card);
     }
     getVictoryPoints() {
-        const allCards = [...this.deck, ...this.hand, ...this.discard];
-        let vp = allCards.reduce((acc, card) => acc + (card.vp || 0), 0);
-        // Gardens: 1 VP per 10 cards
-        const gardensCount = allCards.filter(c => c.name === "Gardens").length;
-        vp += gardensCount * Math.floor(allCards.length / 10);
-        // Duke: 1 VP per Duchy
-        const dukeCount = allCards.filter(c => c.name === "Duke").length;
-        const duchyCount = allCards.filter(c => c.name === "Duchy").length;
+        let vp = 0;
+        let gardensCount = 0;
+        let dukeCount = 0;
+        let duchyCount = 0;
+        let totalCards = 0;
+
+        const zonesToCount = [this.deck, this.hand, this.discard];
+        for (const zone of zonesToCount) {
+            totalCards += zone.length;
+            for (const card of zone) {
+                vp += card.vp || 0;
+                if (card.name === "Gardens") gardensCount++;
+                else if (card.name === "Duke") dukeCount++;
+                else if (card.name === "Duchy") duchyCount++;
+            }
+        }
+
+        vp += gardensCount * Math.floor(totalCards / 10);
         vp += dukeCount * duchyCount;
+
         return vp;
     }
 }
