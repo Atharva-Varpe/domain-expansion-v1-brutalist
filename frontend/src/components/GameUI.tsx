@@ -3,12 +3,52 @@ import { io, Socket } from 'socket.io-client';
 import { motion } from 'framer-motion';
 import { Coins, Hand, Play, ShoppingCart, User, SkipForward, Sword } from 'lucide-react';
 
+export interface ClientCard {
+  name: string;
+  types: string[];
+  cost?: number;
+  description?: string;
+  value?: number;
+}
+
+export interface ClientPlayer {
+  name: string;
+  handSize: number;
+  deckSize: number;
+  discardSize: number;
+  playArea: ClientCard[];
+  hand: ClientCard[];
+}
+
+export interface ClientSupplyItem {
+  name: string;
+  count: number;
+  cost: number;
+  card: ClientCard;
+}
+
+export interface ClientGameState {
+  supply: ClientSupplyItem[];
+  trash: ClientCard[];
+  currentPlayerIndex: number;
+  interactingPlayerIndex: number | null;
+  phase: string;
+  actions: number;
+  buys: number;
+  coins: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  currentInteraction: any;
+  isGameOver: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pendingUndo: any;
+  players: ClientPlayer[];
+}
+
 const socketUrl = import.meta.env.VITE_SOCKET_URL || undefined;
 const socket: Socket = socketUrl ? io(socketUrl) : io();
 
 export const GameUI: React.FC = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [gameState, setGameState] = useState<any>(null);
+  const [gameState, setGameState] = useState<ClientGameState | null>(null);
   const [name, setName] = useState<string>('');
   const [roomId, setRoomId] = useState<string | null>(null);
   const [gameId, setGameId] = useState<string | null>(null);
