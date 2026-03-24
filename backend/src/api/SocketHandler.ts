@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { Server, Socket } from "socket.io";
 import { GameService } from "../services/GameService.js";
 import { ValidationError } from "../errors/AppError.js";
+import { getErrorMessage } from "./utils.js";
 
 interface Room {
   id: string;
@@ -93,7 +94,7 @@ export class SocketHandler {
         }
       } catch (error: unknown) {
         console.error("START_GAME_ERROR:", error);
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -110,7 +111,7 @@ export class SocketHandler {
         socket.emit("game_created", gameId);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -123,7 +124,7 @@ export class SocketHandler {
         socket.join(gameId);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -132,7 +133,7 @@ export class SocketHandler {
         this.gameService.playCard(gameId, cardIndex);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -141,7 +142,7 @@ export class SocketHandler {
         this.gameService.playAllTreasures(gameId);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -150,7 +151,7 @@ export class SocketHandler {
         this.gameService.buyCard(gameId, cardName);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -159,7 +160,7 @@ export class SocketHandler {
         this.gameService.submitInteraction(gameId, result);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -168,7 +169,7 @@ export class SocketHandler {
         this.gameService.nextPhase(gameId);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -177,7 +178,7 @@ export class SocketHandler {
         this.gameService.requestUndo(gameId, playerIndex);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
@@ -186,7 +187,7 @@ export class SocketHandler {
         this.gameService.voteUndo(gameId, playerIndex, accept);
         this.broadcastState(gameId);
       } catch (error: unknown) {
-        socket.emit("error", error instanceof Error ? error.message : "An unknown error occurred");
+        socket.emit("error", getErrorMessage(error));
       }
     });
 
