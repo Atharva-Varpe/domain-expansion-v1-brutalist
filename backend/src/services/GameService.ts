@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { GameState } from "../engine/game.js";
 import type { IGameRepository } from "../repositories/GameRepository.js";
 import { NotFoundError } from "../errors/AppError.js";
@@ -6,7 +7,7 @@ export class GameService {
   constructor(private gameRepository: IGameRepository) {}
 
   public createGame(playerNames: string[]): string {
-    const gameId = Math.random().toString(36).substring(7);
+    const gameId = randomBytes(4).toString("hex");
     const game = new GameState(playerNames);
     this.gameRepository.set(gameId, game);
     return gameId;

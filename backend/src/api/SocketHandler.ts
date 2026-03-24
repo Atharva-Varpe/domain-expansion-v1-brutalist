@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto";
 import { Server, Socket } from "socket.io";
 import { GameService } from "../services/GameService.js";
 import { ValidationError } from "../errors/AppError.js";
@@ -24,7 +25,7 @@ export class SocketHandler {
     });
 
     socket.on("create_room", () => {
-      const roomId = Math.random().toString(36).substring(7);
+      const roomId = randomBytes(4).toString("hex");
       const name = this.users.get(socket.id) || "UNKNOWN";
       const room: Room = {
         id: roomId,

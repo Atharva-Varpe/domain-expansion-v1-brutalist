@@ -2,6 +2,7 @@ import { CardType, type Interaction } from "./card.js";
 import type { Card } from "./card.js";
 import { Player } from "./player.js";
 import { CardFactory } from "./cards.js";
+import { shuffle } from "./utils.js";
 
 export enum GamePhase {
   Action = "ACTION",
@@ -64,7 +65,7 @@ export class GameState {
     ];
 
     // Select exactly 10 kingdom cards
-    const shuffled = [...allKingdomCards].sort(() => Math.random() - 0.5);
+    const shuffled = shuffle([...allKingdomCards]);
     const selectedKingdom = shuffled.slice(0, 10);
     
     selectedKingdom.forEach(c => {
@@ -83,7 +84,7 @@ export class GameState {
     this.players.forEach((player) => {
       for (let i = 0; i < 7; i++) player.deck.push(CardFactory.createCard("Copper"));
       for (let i = 0; i < 3; i++) player.deck.push(CardFactory.createCard("Estate"));
-      player.deck.sort(() => Math.random() - 0.5);
+      shuffle(player.deck);
       player.draw(5);
     });
   }

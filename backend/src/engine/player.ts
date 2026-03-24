@@ -1,4 +1,6 @@
+import { randomBytes } from "crypto";
 import type { Card } from "./card.js";
+import { shuffle } from "./utils.js";
 
 export class Player {
   public player_id: string;
@@ -19,7 +21,7 @@ export class Player {
   };
 
   constructor(name: string) {
-    this.player_id = "usr_" + Math.random().toString(36).substring(2, 8);
+    this.player_id = "usr_" + randomBytes(4).toString("hex");
     this.display_name = name;
   }
 
@@ -34,17 +36,8 @@ export class Player {
   public shuffleDiscardIntoDeck() {
     if (this.zones.discard_pile.length === 0) return;
     
-    // Fisher-Yates Shuffle
     const array = [...this.zones.discard_pile];
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tempI = array[i];
-      const tempJ = array[j];
-      if (tempI && tempJ) {
-        array[i] = tempJ;
-        array[j] = tempI;
-      }
-    }
+    shuffle(array);
     
     this.zones.deck = array;
     this.zones.discard_pile = [];
