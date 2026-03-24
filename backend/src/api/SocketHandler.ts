@@ -5,7 +5,7 @@ import { ValidationError } from "../errors/AppError.js";
 interface Room {
   id: string;
   hostId: string;
-  players: { id: string, name: string, isBot: boolean }[];
+  players: { id: string, name: string }[];
 }
 
 export class SocketHandler {
@@ -29,7 +29,7 @@ export class SocketHandler {
       const room: Room = {
         id: roomId,
         hostId: socket.id,
-        players: [{ id: socket.id, name, isBot: false }]
+        players: [{ id: socket.id, name }]
       };
       this.rooms.set(roomId, room);
       socket.join(roomId);
@@ -45,7 +45,7 @@ export class SocketHandler {
           return;
         }
         const name = this.users.get(socket.id) || "UNKNOWN";
-        room.players.push({ id: socket.id, name, isBot: false });
+        room.players.push({ id: socket.id, name });
         socket.join(roomId);
         this.broadcastRooms();
       }
@@ -53,16 +53,6 @@ export class SocketHandler {
 
     socket.on("leave_room", (roomId: string) => {
       this.handleLeaveRoom(socket, roomId);
-    });
-
-    socket.on("add_bot", ({ roomId, type }: { roomId: string, type: string }) => {
-      const room = this.rooms.get(roomId);
-      if (room && room.hostId === socket.id && room.players.length < 4) {
-        const botId = `bot_${Math.random().toString(36).substring(7)}`;
-        const botName = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase() + " Bot";
-        room.players.push({ id: botId, name: botName, isBot: true });
-        this.broadcastRooms();
-      }
     });
 
     socket.on("remove_player", ({ roomId, playerId }: { roomId: string, playerId: string }) => {
@@ -99,11 +89,6 @@ export class SocketHandler {
           this.io.to(roomId).emit("game_state", initialState);
           this.io.to(gameId).emit("game_created", gameId);
           this.io.to(gameId).emit("game_state", initialState);
-
-          // Handle bots for the first turn if applicable
-          this.gameService.handleBots(gameId, (state) => {
-            this.io.to(gameId).emit("game_state", state);
-          });
         }
       } catch (error: any) {
         console.error("START_GAME_ERROR:", error);
@@ -123,10 +108,6 @@ export class SocketHandler {
         socket.join(gameId);
         socket.emit("game_created", gameId);
         this.broadcastState(gameId);
-
-        this.gameService.handleBots(gameId, (state) => {
-          this.io.to(gameId).emit("game_state", state);
-        });
       } catch (error: any) {
         socket.emit("error", error.message);
       }
@@ -185,10 +166,6 @@ export class SocketHandler {
       try {
         this.gameService.nextPhase(gameId);
         this.broadcastState(gameId);
-        
-        await this.gameService.handleBots(gameId, (state) => {
-          this.broadcastStateByObj(gameId, state);
-        });
       } catch (error: any) {
         socket.emit("error", error.message);
       }
@@ -229,10 +206,10 @@ export class SocketHandler {
     if (room) {
       room.players = room.players.filter(p => p.id !== socket.id);
       socket.leave(roomId);
-      if (room.players.length === 0 || (room.players.every(p => p.isBot))) {
+      if (room.players.length === 0) {
         this.rooms.delete(roomId);
       } else if (room.hostId === socket.id) {
-        const nextHost = room.players.find(p => !p.isBot);
+        const nextHost = room.players[0];
         if (nextHost) {
           room.hostId = nextHost.id;
         } else {

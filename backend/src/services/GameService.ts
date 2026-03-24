@@ -1,6 +1,5 @@
 import { GameState } from "../engine/game.js";
 import type { IGameRepository } from "../repositories/GameRepository.js";
-import { EasyBot, MediumBot, HardBot } from "../engine/bot.js";
 import { NotFoundError } from "../errors/AppError.js";
 
 export class GameService {
@@ -50,23 +49,6 @@ export class GameService {
   public voteUndo(gameId: string, playerIndex: number, accept: boolean): void {
     const game = this.getGameOrFail(gameId);
     game.voteUndo(playerIndex, accept);
-  }
-
-  public async handleBots(gameId: string, onUpdate: (state: any) => void): Promise<void> {
-    const game = this.gameRepository.get(gameId);
-    if (!game) return;
-
-    let currentPlayer = game.getCurrentPlayer();
-    while (currentPlayer.display_name.includes("Bot") && !game.isGameOver()) {
-      let bot;
-      if (currentPlayer.display_name.includes("Easy")) bot = new EasyBot();
-      else if (currentPlayer.display_name.includes("Medium")) bot = new MediumBot();
-      else bot = new HardBot();
-
-      await bot.takeTurn(game);
-      onUpdate(game.getState());
-      currentPlayer = game.getCurrentPlayer();
-    }
   }
 
   private getGameOrFail(gameId: string): GameState {
