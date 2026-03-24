@@ -591,10 +591,10 @@ export class CardFactory {
                             const cardName = await game.requestInteraction({
                                 type: "choice",
                                 message: "Select Action to trash from Supply",
-                                options: Array.from(game.supply.keys()).filter((name: unknown) => {
-                                    const c = CardFactory.createCard(name as string);
-                                    return c.types.includes(CardType.Action) && (game.supply.get(name as string) || 0) > 0;
-                                }).map((name: unknown) => ({ text: name as string, value: name as string }))
+                                options: Array.from<string>(game.supply.keys()).filter((name: string) => {
+                                    const c = CardFactory.createCard(name);
+                                    return c.types.includes(CardType.Action) && (game.supply.get(name) || 0) > 0;
+                                }).map((name: string) => ({ text: name, value: name }))
                             });
                             if (cardName) {
                                 game.supply.set(cardName as string, (game.supply.get(cardName as string) || 1) - 1);
@@ -917,10 +917,10 @@ export class CardFactory {
                                 const trashed = victim.deck.pop();
                                 if (trashed) {
                                     game.trash.push(trashed);
-                                    const options = Array.from(game.supply.keys())
-                                        .filter((n: any) => CardFactory.createCard(n as string).cost === trashed.cost);
+                                    const options = Array.from<string>(game.supply.keys())
+                                        .filter((n: string) => CardFactory.createCard(n).cost === trashed.cost);
                                     if (options.length > 0 && options[0]) {
-                                        const cardName = options[0] as string;
+                                        const cardName = options[0];
                                         victim.discard.push(CardFactory.createCard(cardName));
                                         game.supply.set(cardName, (game.supply.get(cardName) || 1) - 1);
                                     }
@@ -992,10 +992,11 @@ export class CardFactory {
                                 return;
                             game.trash.push(trashed);
                             const targetCost = trashed.cost + 1;
-                            const options = Array.from(game.supply.keys()).filter((n: any) => CardFactory.createCard(n as string).cost === targetCost);
-                            if (options.length > 0) {
-                                player.discard.push(CardFactory.createCard(options[0] as string));
-                                game.supply.set(options[0] as string, (game.supply.get(options[0] as string) || 1) - 1);
+                            const options = Array.from<string>(game.supply.keys()).filter((n: string) => CardFactory.createCard(n).cost === targetCost);
+                            if (options.length > 0 && options[0]) {
+                                const cardName = options[0];
+                                player.discard.push(CardFactory.createCard(cardName));
+                                game.supply.set(cardName, (game.supply.get(cardName) || 1) - 1);
                             }
                         }
                     }
@@ -1010,7 +1011,7 @@ export class CardFactory {
                         const guess = await game.requestInteraction({
                             type: "choice",
                             message: "Wishing Well: Name a card",
-                            options: Array.from(game.supply.keys()).map((n: any) => ({ text: n as string, value: n as string }))
+                            options: Array.from<string>(game.supply.keys()).map((n: string) => ({ text: n, value: n }))
                         });
                         if (player.deck.length === 0)
                             player.shuffleDiscardIntoDeck();
