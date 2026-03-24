@@ -5,8 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "tsx src/server.ts",
-    "test": "tsx src/engine/test-engine.ts"
+    "start": "tsx src/server.ts"
   },
   "keywords": [],
   "author": "",

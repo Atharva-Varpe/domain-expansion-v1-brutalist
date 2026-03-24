@@ -38,7 +38,12 @@ export class Player {
     const array = [...this.zones.discard_pile];
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+      const tempI = array[i];
+      const tempJ = array[j];
+      if (tempI && tempJ) {
+        array[i] = tempJ;
+        array[j] = tempI;
+      }
     }
     
     this.zones.deck = array;
